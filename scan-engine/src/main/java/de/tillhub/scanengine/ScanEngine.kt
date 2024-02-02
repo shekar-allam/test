@@ -1,16 +1,19 @@
 package de.tillhub.scanengine
 
-import android.content.Context
-import de.tillhub.scanengine.google.GoogleScanner
+import androidx.activity.ComponentActivity
+import de.tillhub.scanengine.google.DefaultScanner
 import de.tillhub.scanengine.helper.SingletonHolder
 import de.tillhub.scanengine.sunmi.SunmiScanner
+import java.lang.ref.WeakReference
 
-class ScanEngine private constructor(context: Context) {
-
+class ScanEngine private constructor(activity: ComponentActivity) {
 
     val scanner: Scanner by lazy {
-        GoogleScanner(context)
+        when (ScannerManufacturer.get()) {
+            ScannerManufacturer.SUNMI -> SunmiScanner(WeakReference(activity))
+            ScannerManufacturer.OTHER -> DefaultScanner(WeakReference(activity))
+        }
     }
 
-    companion object : SingletonHolder<ScanEngine, Context>(::ScanEngine)
+    companion object : SingletonHolder<ScanEngine, ComponentActivity>(::ScanEngine)
 }
