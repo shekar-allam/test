@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ScanEngine.getInstance(this).scanner.also {
+        ScanEngine.getInstance(applicationContext).scanner.also {
             lifecycleScope.launch {
                 it.observeScannerResults().collectLatest {
                     println("============")

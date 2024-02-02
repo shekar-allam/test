@@ -53,6 +53,10 @@ class SunmiScanner(
         activeScannerConnection?.barcodeScannerConnection?.clearScanKey()
     }
 
+    override fun evaluateScanResult(extras: Bundle) {
+        TODO("Not yet implemented")
+    }
+
     override fun observeScannerResults(): Flow<ScanEvent> = scanEventProvider.scanEvents
 }
 
