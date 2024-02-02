@@ -9,6 +9,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import de.tillhub.scanengine.HiddenActivity
 import de.tillhub.scanengine.ScanEvent
 import de.tillhub.scanengine.ScanEventProvider
 import de.tillhub.scanengine.ScannedData
@@ -19,7 +21,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
 
-class SunmiScanner : Scanner {
+class SunmiScanner(
+    private val appContext: Context
+)  : Scanner {
 
     private val scanEventProvider = ScanEventProvider()
 
@@ -27,37 +31,16 @@ class SunmiScanner : Scanner {
 
     private var nextScanKey: String? = null
 
-    override fun connect(activity: Activity): ScannerConnection {
-        // TODO [ECR-102] check if sunmi scanner is supported (present) and return null in this case.
-        //  Also add a general mechanism to detect if a scanner is available or not
-        return SunmiScannerConnection(
-            BarcodeScannerConnection(activity, scanEventProvider),
-            createCameraScannerConnection(activity)
-        ).apply {
-            activeScannerConnection = this
-        }
-    }
-
-    private fun createCameraScannerConnection(activity: Activity): CameraScannerConnection? = when (activity) {
-        is ComponentActivity -> CameraScannerConnection(activity, scanEventProvider)
-        else -> {
-            Timber.w(
-                "Scanner could not be connected: Wrong activity type (ComponentActivity needed) - was: %s",
-                activity.javaClass
-            )
-            null
-        }
-    }
-
-    override fun disconnect(connection: ScannerConnection) {
-        if (activeScannerConnection == connection) {
-            activeScannerConnection = null
-        }
-        connection.disconnect()
-    }
-
     override fun scanCameraCode() {
-        activeScannerConnection?.cameraScannerConnection?.scanCameraCode(nextScanKey)
+        try {
+            ContextCompat.startActivity(
+                appContext,
+                Intent(appContext, HiddenActivity::class.java),
+                null
+            )
+        } catch (e: Exception) {
+            Timber.w(e, "camera scanner could not be started.")
+        }
     }
 
     override fun scanNextWithKey(scanKey: String) {
@@ -75,12 +58,10 @@ class SunmiScanner : Scanner {
 
 private class SunmiScannerConnection(
     val barcodeScannerConnection: BarcodeScannerConnection?,
-    val cameraScannerConnection: CameraScannerConnection?,
 ) : ScannerConnection() {
 
     override fun disconnect() {
         barcodeScannerConnection?.disconnect()
-        cameraScannerConnection?.disconnect()
     }
 }
 

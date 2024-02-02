@@ -10,14 +10,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import de.tillhub.poslite.ui.theme.PosliteTheme
 import de.tillhub.scanengine.ScanEngine
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ScanEngine.getInstance(this).scanner.also {
-            it.connect(this)
+            lifecycleScope.launch {
+                it.observeScannerResults().collectLatest {
+                    println("============")
+                }
+            }
             it.scanCameraCode()
         }
         setContent {

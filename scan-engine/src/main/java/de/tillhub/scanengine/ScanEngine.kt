@@ -9,7 +9,10 @@ class ScanEngine private constructor(context: Context) {
 
 
     val scanner: Scanner by lazy {
-        GoogleScanner(context)
+        when (ScannerManufacturer.get()) {
+            ScannerManufacturer.SUNMI -> SunmiScanner(context)
+            ScannerManufacturer.OTHER -> GoogleScanner(context)
+        }
     }
 
     companion object : SingletonHolder<ScanEngine, Context>(::ScanEngine)
