@@ -15,19 +15,7 @@ interface Scanner {
     /**
      * Start the camera based scanner.
      */
-    fun scanCameraCode()
-
-    /**
-     * Set the scanKey that will be used with next scanning event
-     */
-    fun scanNextWithKey(scanKey: String)
-
-    /**
-     * Clear the scanKey that is set to be used with next scanning event
-     */
-    fun clearScanKey()
-
-    fun evaluateScanResult(extras: Bundle)
+    fun scanCameraCode(scanKey: String)
 }
 
 /**

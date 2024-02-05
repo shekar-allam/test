@@ -14,15 +14,6 @@
             android:name="de.tillhub.scanengine.google.ui.GoogleScanningActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat"/>
-        <activity
-            android:name=".HiddenActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat">
-            <intent-filter>
-                <action android:name="com.example.action.START_HIDDEN_ACTIVITY" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

@@ -10,7 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import de.tillhub.scanengine.HiddenActivity
 import de.tillhub.scanengine.ScanEvent
 import de.tillhub.scanengine.ScanEventProvider
 import de.tillhub.scanengine.ScannedData
@@ -20,9 +19,10 @@ import de.tillhub.scanengine.common.safeLet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
+import java.lang.ref.WeakReference
 
 class SunmiScanner(
-    private val appContext: Context
+    private val activity: WeakReference<ComponentActivity>
 )  : Scanner {
 
     private val scanEventProvider = ScanEventProvider()
@@ -31,33 +31,20 @@ class SunmiScanner(
 
     private var nextScanKey: String? = null
 
-    override fun scanCameraCode() {
-        try {
-            ContextCompat.startActivity(
-                appContext,
-                Intent(appContext, HiddenActivity::class.java),
-                null
-            )
-        } catch (e: Exception) {
-            Timber.w(e, "camera scanner could not be started.")
-        }
-    }
-
-    override fun scanNextWithKey(scanKey: String) {
-        nextScanKey = scanKey
-        activeScannerConnection?.barcodeScannerConnection?.scanNextWithKey(scanKey)
-    }
-
-    override fun clearScanKey() {
-        nextScanKey = null
-        activeScannerConnection?.barcodeScannerConnection?.clearScanKey()
-    }
-
-    override fun evaluateScanResult(extras: Bundle) {
-        TODO("Not yet implemented")
-    }
+//    override fun scanNextWithKey(scanKey: String) {
+//        nextScanKey = scanKey
+//        activeScannerConnection?.barcodeScannerConnection?.scanNextWithKey(scanKey)
+//    }
+//
+//    override fun clearScanKey() {
+//        nextScanKey = null
+//        activeScannerConnection?.barcodeScannerConnection?.clearScanKey()
+//    }
 
     override fun observeScannerResults(): Flow<ScanEvent> = scanEventProvider.scanEvents
+    override fun scanCameraCode(scanKey: String) {
+
+    }
 }
 
 private class SunmiScannerConnection(
