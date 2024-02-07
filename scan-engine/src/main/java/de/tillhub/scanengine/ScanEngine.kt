@@ -1,6 +1,5 @@
 package de.tillhub.scanengine
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import de.tillhub.scanengine.google.GoogleScanner
 import de.tillhub.scanengine.helper.SingletonHolder

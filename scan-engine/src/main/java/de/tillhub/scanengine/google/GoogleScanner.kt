@@ -44,14 +44,20 @@ class GoogleScanner(
 
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
+        scanKey = null
+        activity.get()?.lifecycle?.removeObserver(this)
         activity.clear()
     }
 
     override fun observeScannerResults(): Flow<ScanEvent> = scanEventProvider.scanEvents
 
-    override fun scanCameraCode(scanKey: String) {
+    override fun scanCameraCode(scanKey: String?) {
         this.scanKey = scanKey
         cameraScannerResult.launch(Intent(activity.get(), GoogleScanningActivity::class.java))
+    }
+
+    override fun scanNextWithKey(scanKey: String) {
+        this.scanKey = scanKey
     }
 
     private fun evaluateScanResult(extras: Bundle) {

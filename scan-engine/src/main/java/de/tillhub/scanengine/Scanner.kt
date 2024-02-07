@@ -1,6 +1,5 @@
 package de.tillhub.scanengine
 
-import android.os.Bundle
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -15,14 +14,7 @@ interface Scanner {
     /**
      * Start the camera based scanner.
      */
-    fun scanCameraCode(scanKey: String)
-}
+    fun scanCameraCode(scanKey: String?)
 
-/**
- * Represents a connection to a scanner. When the scanner is not used anymore it must be disconnected using
- * [Scanner.disconnect].
- */
-@Suppress("UnnecessaryAbstractClass")
-abstract class ScannerConnection {
-    internal abstract fun disconnect()
+    fun scanNextWithKey(scanKey: String)
 }
