@@ -14,7 +14,6 @@ import de.tillhub.scanengine.ScannedData
 import de.tillhub.scanengine.Scanner
 import de.tillhub.scanengine.google.ui.GoogleScanningActivity
 import kotlinx.coroutines.flow.Flow
-import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 
 class DefaultScanner(
@@ -34,18 +33,22 @@ class DefaultScanner(
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
-        cameraScannerResult = activity.get()
-            ?.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                result.data?.extras?.let {
-                    evaluateScanResult(it)
-                }
-            } ?: throw IllegalStateException("GoogleScanner: Activity is null")
+        cameraScannerResult = activity.get()?.activityResultRegistry?.register(
+            CAMERA_SCANNER_KEY,
+            owner,
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            result.data?.extras?.let {
+                evaluateScanResult(it)
+            }
+        } ?: throw IllegalStateException("GoogleScanner: Activity is null")
     }
 
 
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
         scanKey = null
+        cameraScannerResult.unregister()
         activity.get()?.lifecycle?.removeObserver(this)
         activity.clear()
     }
@@ -72,5 +75,9 @@ class DefaultScanner(
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             // nothing to do
         }
+    }
+
+    companion object {
+        const val CAMERA_SCANNER_KEY = "CAMERA_SCANNER_KEY"
     }
 }
