@@ -14,7 +14,7 @@ interface Scanner {
     /**
      * Start the camera based scanner.
      */
-    fun startCameraScanner(scanKey: String?)
+    fun startCameraScanner(scanKey: String? = null)
 
     /**
      * Scan with next key
