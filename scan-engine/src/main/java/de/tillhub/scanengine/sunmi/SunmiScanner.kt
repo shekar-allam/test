@@ -62,7 +62,7 @@ class SunmiScanner(
     }
 
     override fun observeScannerResults(): Flow<ScanEvent> = scanEventProvider.scanEvents
-    override fun scanCameraCode(scanKey: String?) {
+    override fun startCameraScanner(scanKey: String?) {
         this.scanKey = scanKey
         cameraScannerResult.launch(scanIntent())
     }

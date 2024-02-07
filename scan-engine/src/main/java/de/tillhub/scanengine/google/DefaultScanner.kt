@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 
-class GoogleScanner(
+class DefaultScanner(
     private val activity: WeakReference<ComponentActivity>
 ) : Scanner, DefaultLifecycleObserver {
 
@@ -42,6 +42,7 @@ class GoogleScanner(
             } ?: throw IllegalStateException("GoogleScanner: Activity is null")
     }
 
+
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
         scanKey = null
@@ -51,7 +52,7 @@ class GoogleScanner(
 
     override fun observeScannerResults(): Flow<ScanEvent> = scanEventProvider.scanEvents
 
-    override fun scanCameraCode(scanKey: String?) {
+    override fun startCameraScanner(scanKey: String?) {
         this.scanKey = scanKey
         cameraScannerResult.launch(Intent(activity.get(), GoogleScanningActivity::class.java))
     }
