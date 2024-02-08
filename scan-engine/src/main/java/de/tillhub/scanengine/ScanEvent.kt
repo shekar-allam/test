@@ -4,7 +4,7 @@ package de.tillhub.scanengine
  * Represents a scan result which can be either a valid scan or an error.
  */
 sealed class ScanEvent {
-    class Success(val content: ScannedData) : ScanEvent() {
+    class Success(val content: ScannedDataResult) : ScanEvent() {
         override fun toString(): String = "ScanEvent.Success(content='$content')"
     }
 

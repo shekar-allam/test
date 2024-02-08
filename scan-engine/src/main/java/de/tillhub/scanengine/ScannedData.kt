@@ -1,6 +1,11 @@
 package de.tillhub.scanengine
 
-data class ScannedData(
-    val value: String,
-    val scanKey: String? = null
-)
+sealed class ScannedDataResult {
+    data class ScannedData(
+        val value: String,
+        val scanKey: String? = null
+    ) : ScannedDataResult()
+
+    data object Canceled : ScannedDataResult()
+}
+

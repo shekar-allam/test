@@ -1,4 +1,4 @@
-package de.tillhub.scanengine.google.ui
+package de.tillhub.scanengine.default.ui
 
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy

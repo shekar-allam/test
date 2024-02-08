@@ -1,51 +1,34 @@
 package de.tillhub.poslite
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import de.tillhub.poslite.ui.theme.PosliteTheme
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import de.tillhub.scanengine.ScanEngine
-import de.tillhub.scanengine.google.ui.GoogleScanningActivity
+import de.tillhub.scanengine.ScanEvent
+import de.tillhub.scanengine.ScannedDataResult
+import kotlinx.coroutines.launch
 
-class SecondActivity : ComponentActivity() {
-    private var cameraScannerResult: ActivityResultLauncher<Intent>? =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            ScanEngine.getInstance(this).scanner.also { scanner ->
-                launch()
-            }
-        }
+class SecondActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        launch()
-        extracted()
-    }
-    private fun extracted() {
-        setContent {
-            PosliteTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
+        setContentView(R.layout.activity_second)
+        onClickFirst()
+        lifecycleScope.launch {
+            ScanEngine.getInstance(this@SecondActivity).scanner.observeScannerResults()
+                .collect {
+                    val t = ((it as ScanEvent.Success).content as? ScannedDataResult.ScannedData)?.value.orEmpty()
+                    Toast.makeText(this@SecondActivity, t, Toast.LENGTH_SHORT)
                 }
-            }
         }
     }
-    private fun launch() {
-        try {
-            cameraScannerResult?.launch(Intent(this, GoogleScanningActivity::class.java))
-        } catch (e: Exception) {
-            Log.d("==", "camera scanner could not be started.")
-        }
+    fun onClickFirst() {
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        fragmentTransaction.add(R.id.fragment_container_view, FirstFragment())
+        fragmentTransaction.addToBackStack(null)
+        fragmentTransaction.commit()
     }
-
 }

@@ -16,7 +16,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Poslite">
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +28,7 @@
             android:name=".SecondActivity"
             android:exported="true"
             android:label="222"
-            android:theme="@style/Theme.Poslite" />
+            android:theme="@style/Theme.AppCompat" />
     </application>
 
 </manifest>

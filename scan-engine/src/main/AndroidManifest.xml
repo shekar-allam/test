@@ -11,7 +11,7 @@
             android:value="barcode" />
 
         <activity
-            android:name="de.tillhub.scanengine.google.ui.GoogleScanningActivity"
+            android:name="de.tillhub.scanengine.default.ui.GoogleScanningActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat"/>
     </application>

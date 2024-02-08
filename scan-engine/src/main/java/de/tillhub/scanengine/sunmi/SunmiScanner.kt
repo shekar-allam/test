@@ -9,21 +9,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import de.tillhub.scanengine.ScanEvent
 import de.tillhub.scanengine.ScanEventProvider
-import de.tillhub.scanengine.ScannedData
+import de.tillhub.scanengine.ScannedDataResult
 import de.tillhub.scanengine.Scanner
+import de.tillhub.scanengine.Scanner.Companion.CAMERA_SCANNER_KEY
 import de.tillhub.scanengine.common.safeLet
-import de.tillhub.scanengine.google.DefaultScanner.Companion.CAMERA_SCANNER_KEY
 import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import java.lang.ref.WeakReference
 
 class SunmiScanner(
     private val activity: WeakReference<ComponentActivity>
-) : Scanner, DefaultLifecycleObserver {
+) : Scanner {
 
     private val scanEventProvider = ScanEventProvider()
 
@@ -32,10 +31,6 @@ class SunmiScanner(
     private lateinit var cameraScannerResult: ActivityResultLauncher<Intent>
 
     private val broadcastReceiver = SunmiBarcodeScannerBroadcastReceiver(scanEventProvider)
-
-    init {
-        activity.get()?.lifecycle?.addObserver(this)
-    }
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
@@ -87,7 +82,12 @@ class SunmiScanner(
             if (result.isNotEmpty()) {
                 Timber.i("scan codes returned %s", result)
                 result.forEach {
-                    scanEventProvider.addScanResult(ScannedData(it.content, scanKey))
+                    scanEventProvider.addScanResult(
+                        ScannedDataResult.ScannedData(
+                            it.content,
+                            scanKey
+                        )
+                    )
                 }
                 scanKey = null
             }
@@ -130,7 +130,7 @@ class SunmiScanner(
             val code = intent.getStringExtra(DATA)
             if (!code.isNullOrEmpty()) {
                 Timber.v("scanned code: %s", code)
-                scanEventProvider.addScanResult(ScannedData(code, scanKey))
+                scanEventProvider.addScanResult(ScannedDataResult.ScannedData(code, scanKey))
             }
         }
 

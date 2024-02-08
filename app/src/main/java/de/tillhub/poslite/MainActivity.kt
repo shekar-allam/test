@@ -1,9 +1,12 @@
 package de.tillhub.poslite
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,15 +22,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import de.tillhub.poslite.ui.theme.PosliteTheme
 import de.tillhub.scanengine.ScanEngine
 import de.tillhub.scanengine.ScanEvent
-import kotlinx.coroutines.flow.collectLatest
+import de.tillhub.scanengine.ScannedDataResult
 import kotlinx.coroutines.launch
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,8 +40,10 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             ScanEngine.getInstance(this@MainActivity).scanner.observeScannerResults()
-                .collectLatest {
-                    textEmpty.value = (it as ScanEvent.Success).content.value
+                .collect {
+                    val t =
+                        ((it as ScanEvent.Success).content as? ScannedDataResult.ScannedData)?.value.orEmpty()
+                    textEmpty.value = t
                 }
         }
         setContent {
@@ -48,19 +55,19 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val value by textEmpty
                     Greeting(value, Modifier) {
-                        ScanEngine.getInstance(this@MainActivity).scanner.startCameraScanner()
+                        startActivity(Intent(this, SecondActivity::class.java))
                     }
                 }
             }
         }
         ScanEngine.getInstance(this)
-        Log.d("=======","=======$this")
     }
 }
 
 @Composable
 fun Greeting(value: String, modifier: Modifier = Modifier, startCamaraScanner: () -> Unit) {
-    Column(modifier=Modifier.fillMaxSize(),
+    Column(
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

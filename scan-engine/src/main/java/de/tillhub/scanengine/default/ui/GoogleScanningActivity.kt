@@ -1,4 +1,4 @@
-package de.tillhub.scanengine.google.ui
+package de.tillhub.scanengine.default.ui
 
 import android.Manifest
 import android.content.Intent
@@ -64,6 +64,7 @@ class GoogleScanningActivity : AppCompatActivity() {
                             RESULT_OK,
                             Intent().also {
                                 it.putExtra(DATA_KEY, state.barcode)
+                                it.putExtra(SCAN_KEY, intent.extras?.getString(SCAN_KEY).orEmpty())
                             }
                         )
                         finish()
@@ -131,6 +132,7 @@ class GoogleScanningActivity : AppCompatActivity() {
 
     companion object {
         const val DATA_KEY = "scanned_data"
+        const val SCAN_KEY = "scan_key"
     }
 }
 
