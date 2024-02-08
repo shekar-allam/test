@@ -32,19 +32,22 @@ import de.tillhub.scanengine.ScannedDataResult
 import kotlinx.coroutines.launch
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
+    private val scanner by lazy { ScanEngine.getInstance(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val textEmpty = mutableStateOf("")
 
         lifecycleScope.launch {
-            ScanEngine.getInstance(this@MainActivity).scanner.observeScannerResults()
-                .collect {
-                    val t =
-                        ((it as ScanEvent.Success).content as? ScannedDataResult.ScannedData)?.value.orEmpty()
-                    textEmpty.value = t
-                }
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                scanner.scanner.observeScannerResults()
+                    .collect {
+                        val t =
+                            ((it as ScanEvent.Success).content as? ScannedDataResult.ScannedData)?.value.orEmpty()
+                        textEmpty.value = t
+                    }
+            }
         }
         setContent {
             PosliteTheme {
@@ -55,12 +58,14 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     val value by textEmpty
                     Greeting(value, Modifier) {
-                        startActivity(Intent(this, SecondActivity::class.java))
+                        ScanEngine.getInstance(this).scanner.startCameraScanner("key")
+                        //startActivity(Intent(this, SecondActivity::class.java))
                     }
                 }
             }
         }
-        ScanEngine.getInstance(this)
+
+
     }
 }
 

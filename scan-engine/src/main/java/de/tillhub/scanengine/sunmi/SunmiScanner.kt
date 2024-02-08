@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -16,110 +17,55 @@ import de.tillhub.scanengine.ScannedDataResult
 import de.tillhub.scanengine.Scanner
 import de.tillhub.scanengine.Scanner.Companion.CAMERA_SCANNER_KEY
 import de.tillhub.scanengine.common.safeLet
+import de.tillhub.scanengine.default.ui.GoogleScanningActivity
 import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import java.lang.ref.WeakReference
 
 class SunmiScanner(
-    private val activity: WeakReference<ComponentActivity>
+    private val registry: ActivityResultRegistry,
+    private val context: Context
 ) : Scanner {
 
     private val scanEventProvider = ScanEventProvider()
 
     private var scanKey: String? = null
 
-    private lateinit var cameraScannerResult: ActivityResultLauncher<Intent>
+    private lateinit var sunmiScannerLauncher: ActivityResultLauncher<Intent>
 
     private val broadcastReceiver = SunmiBarcodeScannerBroadcastReceiver(scanEventProvider)
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
-        cameraScannerResult = activity.get()?.activityResultRegistry?.register(
-            CAMERA_SCANNER_KEY,
-            owner,
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            result.data?.extras?.let {
-                evaluateScanResult(it)
+        sunmiScannerLauncher =
+            registry.register(
+                CAMERA_SCANNER_KEY,
+                owner,
+                SunmiScannerActivityContract()
+            ) { result ->
+                scanEventProvider.addScanResult(result)
             }
-        } ?: throw IllegalStateException("SunmiScanner: Activity is null")
-
-        activity.get()?.let {
-            ContextCompat.registerReceiver(
-                it,
-                broadcastReceiver,
-                createIntentFilter(),
-                ContextCompat.RECEIVER_EXPORTED
-            )
-        }
-    }
-
-    override fun onDestroy(owner: LifecycleOwner) {
-        super.onDestroy(owner)
-        scanKey = null
-        cameraScannerResult.unregister()
-        activity.get()?.lifecycle?.removeObserver(this)
-        activity.get()?.unregisterReceiver(broadcastReceiver)
-        activity.clear()
+        ContextCompat.registerReceiver(
+            context,
+            broadcastReceiver,
+            createIntentFilter(),
+            ContextCompat.RECEIVER_EXPORTED
+        )
     }
 
     override fun observeScannerResults(): Flow<ScanEvent> = scanEventProvider.scanEvents
     override fun startCameraScanner(scanKey: String?) {
         this.scanKey = scanKey
-        cameraScannerResult.launch(scanIntent())
+        sunmiScannerLauncher.launch(scanIntent(scanKey = scanKey))
     }
 
     override fun scanNextWithKey(scanKey: String) {
         this.scanKey = scanKey
     }
 
-    private fun evaluateScanResult(extras: Bundle) {
-        try {
-            @Suppress("UNCHECKED_CAST")
-            val rawCodes = extras.getSerializable("data") as List<Map<String, String>>
-            val result = parseScanResults(rawCodes)
-
-            if (result.isNotEmpty()) {
-                Timber.i("scan codes returned %s", result)
-                result.forEach {
-                    scanEventProvider.addScanResult(
-                        ScannedDataResult.ScannedData(
-                            it.content,
-                            scanKey
-                        )
-                    )
-                }
-                scanKey = null
-            }
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            // nothing to do
-        }
-    }
-
-    private fun parseScanResults(rawCodes: List<Map<String, String>>): List<ScanCode> {
-        return rawCodes.mapNotNull {
-            safeLet(it[RESPONSE_TYPE], it[RESPONSE_VALUE]) { type, value ->
-                ScanCode(
-                    type.toScanCodeType(),
-                    value
-                )
-            }
-        }
-    }
-
-    private data class ScanCode(
-        val codeType: ScanCodeType,
-        val content: String,
-    )
-
     sealed class ScanCodeType {
         data class Type(val code: String) : ScanCodeType()
         object Unknown : ScanCodeType()
-    }
-
-    private fun String?.toScanCodeType() = when (this) {
-        null -> ScanCodeType.Unknown
-        else -> ScanCodeType.Type(this)
     }
 
     private class SunmiBarcodeScannerBroadcastReceiver(private val scanEventProvider: ScanEventProvider) :
@@ -143,7 +89,7 @@ class SunmiScanner(
         const val RESPONSE_TYPE = "TYPE"
         const val RESPONSE_VALUE = "VALUE"
 
-        private fun scanIntent(scanMultipleCodes: Boolean = false): Intent =
+        private fun scanIntent(scanMultipleCodes: Boolean = false, scanKey: String?): Intent =
             Intent("com.summi.scan").apply {
                 setPackage("com.sunmi.sunmiqrcodescanner")
 
@@ -169,6 +115,9 @@ class SunmiScanner(
 
                 // Whether to identify several codes at once (default false)
                 putExtra("IDENTIFY_MORE_CODE", scanMultipleCodes)
+
+                // Scan key
+                putExtra(GoogleScanningActivity.SCAN_KEY, scanKey)
             }
 
         private const val ACTION_DATA_CODE_RECEIVED = "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED"

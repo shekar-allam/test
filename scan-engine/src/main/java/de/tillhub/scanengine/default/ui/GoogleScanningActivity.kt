@@ -17,11 +17,14 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import de.tillhub.scanengine.R
 import de.tillhub.scanengine.databinding.ActivityGoogleScanningBinding
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 
 class GoogleScanningActivity : AppCompatActivity() {
@@ -56,21 +59,23 @@ class GoogleScanningActivity : AppCompatActivity() {
             checkPermission()
         }
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.scanningState.collect { state ->
-                when (state) {
-                    is ScanningState.CodeScanned -> {
-                        setResult(
-                            RESULT_OK,
-                            Intent().also {
-                                it.putExtra(DATA_KEY, state.barcode)
-                                it.putExtra(SCAN_KEY, intent.extras?.getString(SCAN_KEY).orEmpty())
-                            }
-                        )
-                        finish()
-                    }
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                viewModel.scanningState.collect { state ->
+                    when (state) {
+                        is ScanningState.CodeScanned -> {
+                            setResult(
+                                RESULT_OK,
+                                Intent().apply {
+                                    putExtra(DATA_KEY, state.barcode)
+                                    putExtra(SCAN_KEY, intent.extras?.getString(SCAN_KEY).orEmpty())
+                                }
+                            )
+                            finish()
+                        }
 
-                    ScanningState.Idle -> Unit
+                        ScanningState.Idle -> Unit
+                    }
                 }
             }
         }

@@ -11,8 +11,8 @@ class ScanEngine private constructor(activity: ComponentActivity) {
 
     val scanner: Scanner by lazy {
         when (ScannerManufacturer.get()) {
-            ScannerManufacturer.SUNMI -> SunmiScanner(WeakReference(activity))
-            ScannerManufacturer.OTHER -> DefaultScanner(activity.activityResultRegistry)
+            ScannerManufacturer.SUNMI -> SunmiScanner(activity.activityResultRegistry, activity)
+            ScannerManufacturer.OTHER -> DefaultScanner(activity.activityResultRegistry, activity)
         }
     }
     init {

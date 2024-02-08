@@ -26,13 +26,6 @@ class SecondFragment : Fragment() {
         view.findViewById<View>(R.id.buttonScan).setOnClickListener {
             ScanEngine.getInstance(requireActivity()).scanner.startCameraScanner("key")
         }
-        lifecycleScope.launch {
-            ScanEngine.getInstance(requireActivity()).scanner.observeScannerResults()
-                .collect {
-                    val t =
-                        ((it as ScanEvent.Success).content as? ScannedDataResult.ScannedData)?.value.orEmpty()
-                    view.findViewById<TextView>(R.id.text).text = t
-                }
-        }
+
     }
 }

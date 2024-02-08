@@ -1,6 +1,7 @@
 package de.tillhub.scanengine.default
 
 import DefaultScannerActivityContract
+import android.content.Context
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
@@ -12,7 +13,8 @@ import de.tillhub.scanengine.Scanner.Companion.CAMERA_SCANNER_KEY
 import kotlinx.coroutines.flow.Flow
 
 class DefaultScanner(
-    private val registry: ActivityResultRegistry
+    private val registry: ActivityResultRegistry,
+    context: Context
 ) : Scanner {
 
     @VisibleForTesting
